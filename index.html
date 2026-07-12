@@ -1,16 +1,23 @@
-07.12 12.05
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tools by Andik - Image to Prompt & AI Generator</title>
+<title>Tools by Andik - Premium Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root { --bg:#0a0a0f; --card:#151821; --orange:#ff7b00; --text:#fff; }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
 body{background:var(--bg);color:var(--text);padding:20px}
-.container{max-width:900px;margin:auto}
+.login-wrapper{display:flex;justify-content:center;align-items:center;min-height:90vh}
+.login-box{background:var(--card);padding:30px;border-radius:16px;border:1px solid #222;width:100%;max-width:400px;text-align:center}
+.login-box h1{color:var(--orange);margin-bottom:10px}
+.login-box input{width:100%;padding:14px;background:#0a0a0f;border:1px solid #333;border-radius:10px;color:var(--text);margin-top:15px;font-size:15px}
+.btn{width:100%;padding:14px;margin-top:12px;background:linear-gradient(90deg,var(--orange),#ffb347);border:none;border-radius:10px;color:#000;font-weight:700;font-size:15px;cursor:pointer}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-small{padding:8px 12px;font-size:12px;margin-right:8px;margin-top:8px;background:#222;color:var(--orange);border:1px solid var(--orange)}
+.error{color:#ff4d4d;font-size:13px;margin-top:10px;display:none}
+.container{max-width:900px;margin:auto;display:none}
 .header{text-align:center;margin-bottom:30px}
 .header h1{color:var(--orange);font-size:28px}
 .header p{color:#aaa;font-size:14px}
@@ -19,9 +26,6 @@ body{background:var(--bg);color:var(--text);padding:20px}
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 input[type=file]{width:100%;padding:14px;background:#0a0a0f;border:2px dashed var(--orange);border-radius:10px;color:var(--text);cursor:pointer;font-size:12px}
 .preview{width:100%;height:200px;object-fit:cover;border-radius:12px;margin-top:12px;display:none;border:1px solid #333}
-.btn{width:100%;padding:14px;margin-top:12px;background:linear-gradient(90deg,var(--orange),#ffb347);border:none;border-radius:10px;color:#000;font-weight:700;font-size:15px;cursor:pointer}
-.btn:disabled{opacity:0.5;cursor:not-allowed}
-.btn-small{padding:8px 12px;font-size:12px;margin-right:8px;margin-top:8px;background:#222;color:var(--orange);border:1px solid var(--orange)}
 textarea{width:100%;height:120px;background:#0a0a0f;border:1px solid #333;border-radius:10px;color:var(--text);padding:12px;margin-top:10px;font-size:14px}
 .output-img{width:100%;border-radius:12px;margin-top:12px;border:2px solid var(--orange)}
 .loader{display:none;text-align:center;padding:20px}
@@ -30,17 +34,32 @@ textarea{width:100%;height:120px;background:#0a0a0f;border:1px solid #333;border
 .tag{padding:6px 12px;background:#0a0a0f;border:1px solid #333;border-radius:20px;font-size:12px;cursor:pointer}
 label{font-size:13px;color:#aaa;margin-bottom:6px;display:block}
 .preset-title{font-size:13px;margin-top:12px;margin-bottom:6px;color:#aaa}
+.logout{float:right;background:#222;color:#ff4d4d;border:1px solid #ff4d4d;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 @media(max-width:700px){.upload-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="container">
+
+<!-- HALAMAN LOGIN -->
+<div class="login-wrapper" id="loginPage">
+  <div class="login-box">
+    <h1>🔥 TOOLS by ANDIK</h1>
+    <p>Masukkan Kode Akses Sewa</p>
+    <input type="text" id="kodeInput" placeholder="Contoh: ANDIK-001">
+    <button class="btn" onclick="cekLogin()">MASUK</button>
+    <p class="error" id="errorMsg">Kode salah atau sudah expired!</p>
+    <p style="font-size:11px;color:#666;margin-top:15px">Hubungi Andik untuk beli akses</p>
+  </div>
+</div>
+
+<!-- HALAMAN TOOLS UTAMA -->
+<div class="container" id="toolsPage">
   <div class="header">
-    <h1> TOOLS by ANDIK</h1>
-    <p>Upload Foto > Jadi Prompt + Generate Gambar Mix 2 Referensi. Gratis</p>
+    <button class="logout" onclick="logout()">Logout</button>
+    <h1>🔥 TOOLS by ANDIK PREMIUM</h1>
+    <p>Selamat datang <b><span id="namaUser"></span></b> | Expired: <span id="expiredUser"></span></p>
   </div>
 
-  <!-- OPSI 1 -->
   <div class="card">
     <h3>OPSI 1: Ubah Gambar Jadi Prompt AI</h3>
     <input type="file" id="imgInput1" accept="image/*">
@@ -52,10 +71,9 @@ label{font-size:13px;color:#aaa;margin-bottom:6px;display:block}
       <div class="tag" onclick="addTag('realistic photo, 8k')">+ Realistic</div>
       <div class="tag" onclick="addTag('cinematic lighting, studio')">+ Cinematic</div>
     </div>
-    <button class="btn" onclick="copyPrompt()"> Salin Prompt</button>
+    <button class="btn" onclick="copyPrompt()">📋 Salin Prompt</button>
   </div>
 
-  <!-- OPSI 2 -->
   <div class="card">
     <h3>OPSI 2: Buat Gambar Baru Dari 2 Referensi</h3>
     <div class="upload-grid">
@@ -71,30 +89,73 @@ label{font-size:13px;color:#aaa;margin-bottom:6px;display:block}
       </div>
     </div>
     <textarea id="extraPrompt" placeholder="Perintah tambahan: contoh 'gabungkan wajah dari gambar 1 ke pose gambar 2, background pantai malam'"></textarea>
-
     <div class="preset-title">Preset Cepat by Andik:</div>
-    <button class="btn-small" onclick="setPreset('ganti wajah orang di gambar 2 dengan wajah dari gambar 1, orang naik motor sport, realistic photo, helm dilepas, senyum, background jalan raya, cinematic lighting')">️ Jadi Anak Motor</button>
+    <button class="btn-small" onclick="setPreset('ganti wajah orang di gambar 2 dengan wajah dari gambar 1, orang naik motor sport, realistic photo, helm dilepas, senyum, background jalan raya, cinematic lighting')">🏍️ Jadi Anak Motor</button>
     <button class="btn-small" onclick="setPreset('pakai wajah dari gambar 1, pakai kostum anime dari gambar 2, background jepang malam, sakura, cinematic')">⛩️ Cosplay Anime</button>
-    <button class="btn-small" onclick="setPreset('ambil wajah dari gambar 1, pakai baju dan pose dari gambar 2, studio photo, background putih, professional')"> Ganti Baju Studio</button>
-    <button class="btn-small" onclick="setPreset('mix the face from first image with the pose and outfit from second image, fantasy, magical, 8k')">✨ Fantasy Style</button>
-
-    <button class="btn" id="btnGenerate" onclick="generateImage()"> Generate Gambar Mix - GRATIS</button>
+    <button class="btn-small" onclick="setPreset('ambil wajah dari gambar 1, pakai baju dan pose dari gambar 2, studio photo, background putih, professional')">👔 Ganti Baju Studio</button>
+    <button class="btn" id="btnGenerate" onclick="generateImage()">🎨 Generate Gambar Mix - GRATIS</button>
     <div class="loader" id="loader">⏳ Sedang generate... 20-40 detik</div>
     <img id="hasilGambar" class="output-img" style="display:none;">
-    <p class="note">*Tips: Gambar 1 = wajah. Gambar 2 = pose/baju/objek. Klik preset biar gak ribet ngetik</p>
+    <p class="note">*Tips: Gambar 1 = wajah. Gambar 2 = pose/baju/objek</p>
   </div>
 </div>
 
 <script>
+// ===== DATA USER SEWA - EDIT DI SINI AJA =====
+const daftarUser = [
+  { kode: "ANDIK-001", nama: "Budi", expired: "2026-11-30" },
+  { kode: "ANDIK-002", nama: "Siti", expired: "2026-12-15" },
+  { kode: "ANDIK-ADMIN", nama: "Andik", expired: "2027-12-31" } // kode buat kamu
+];
+// =============================================
+
+function cekLogin(){
+  const kode = document.getElementById('kodeInput').value.toUpperCase();
+  const user = daftarUser.find(u => u.kode === kode);
+  const errorMsg = document.getElementById('errorMsg');
+  const today = new Date().toISOString().split('T')[0];
+
+  if(user && user.expired >= today){
+    localStorage.setItem('userLogin', JSON.stringify(user));
+    bukaTools(user);
+  } else {
+    errorMsg.style.display = 'block';
+  }
+}
+
+function bukaTools(user){
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('toolsPage').style.display = 'block';
+  document.getElementById('namaUser').innerText = user.nama;
+  document.getElementById('expiredUser').innerText = user.expired;
+}
+
+function logout(){
+  localStorage.removeItem('userLogin');
+  location.reload();
+}
+
+// Auto login kalau belum expired
+window.onload = function(){
+  const savedUser = localStorage.getItem('userLogin');
+  if(savedUser){
+    const user = JSON.parse(savedUser);
+    const today = new Date().toISOString().split('T')[0];
+    if(user.expired >= today){
+      bukaTools(user);
+    } else {
+      localStorage.removeItem('userLogin');
+    }
+  }
+}
+
+// ===== KODE TOOLS AI =====
 let base64Image1 = "";
 let base64Image2a = "";
 let base64Image2b = "";
-
-// Preview
 document.getElementById('imgInput1').onchange = e => handleFile(e, 'preview1', 1);
 document.getElementById('imgInput2a').onchange = e => handleFile(e, 'preview2a', '2a');
 document.getElementById('imgInput2b').onchange = e => handleFile(e, 'preview2b', '2b');
-
 function handleFile(e, previewId, num){
   const file = e.target.files[0];
   if(!file) return;
@@ -108,13 +169,10 @@ function handleFile(e, previewId, num){
   }
   reader.readAsDataURL(file);
 }
-
-// OPSI 1: IMAGE TO PROMPT
 function generatePrompt(){
   if(!base64Image1) return alert('Upload gambar dulu!');
   document.getElementById('btnPrompt').innerText = '⏳ Menganalisa...';
   document.getElementById('btnPrompt').disabled = true;
-
   setTimeout(() => {
     const prompt = `masterpiece, best quality, high detail photo, natural skin texture, cinematic lighting, sharp focus, 8k, professional portrait --ar 2:3 --style raw`;
     document.getElementById('promptResult').value = prompt;
@@ -122,40 +180,28 @@ function generatePrompt(){
     document.getElementById('btnPrompt').disabled = false;
   }, 1500);
 }
-
 function addTag(tag){
   let current = document.getElementById('promptResult').value;
   document.getElementById('promptResult').value = current + ', ' + tag;
 }
-
 function copyPrompt(){
   navigator.clipboard.writeText(document.getElementById('promptResult').value);
   alert('Prompt berhasil disalin!');
 }
-
-// FUNGSI SET PRESET
 function setPreset(text){
   document.getElementById('extraPrompt').value = text;
 }
-
-// OPSI 2: GENERATE DENGAN 2 GAMBAR
 async function generateImage(){
   if(!base64Image2a &&!base64Image2b) return alert('Upload minimal 1 gambar referensi!');
   let prompt = document.getElementById('extraPrompt').value || "buat gambar baru dengan style yang sama";
-
   let refText = "";
   if(base64Image2a && base64Image2b) refText = "mix the face from first image with the pose and outfit from second image";
   else if(base64Image2a) refText = "use the face and style from reference image";
   else refText = "use the pose and background from reference image";
-
   let fullPrompt = `${refText}, ${prompt}. masterpiece, 8k, highly detailed, cinematic`;
-
   document.getElementById('loader').style.display = 'block';
   document.getElementById('btnGenerate').disabled = true;
-
-  // Pollinations AI - Gratis
   let url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=512&height=768&nologo=true&seed=${Math.floor(Math.random()*9999)}`;
-
   document.getElementById('hasilGambar').src = url;
   document.getElementById('hasilGambar').onload = () => {
     document.getElementById('loader').style.display = 'none';
