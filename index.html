@@ -14,6 +14,7 @@ input,select,textarea{width:100%;padding:12px;background:#0a0a0f;border:1px soli
 .btn{width:100%;padding:12px;margin-top:10px;background:linear-gradient(90deg,var(--orange),#ffb347);border:none;border-radius:10px;color:#000;font-weight:700;cursor:pointer;font-size:15px}
 .btn:disabled{opacity:0.5;cursor:not-allowed}
 .btn-small{background:#222;color:var(--orange);border:1px solid var(--orange);padding:6px 10px;font-size:12px;margin-right:8px;margin-top:8px;cursor:pointer;border-radius:8px}
+.btn-premium{background:linear-gradient(90deg,#ff00ff,#ff7b00);color:#fff}
 .btn-danger{background:#ff4d4d;color:#fff}
 table{width:100%;margin-top:15px;border-collapse:collapse;font-size:13px}
 td,th{padding:8px;border-bottom:1px solid #333;text-align:left}
@@ -27,12 +28,23 @@ h3{color:var(--orange);margin-bottom:10px}
 .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .tag{padding:6px 12px;background:#0a0a0f;border:1px solid #333;border-radius:20px;font-size:12px;cursor:pointer}
 hr{border-color:#333}
-@media(max-width:700px){.upload-grid{grid-template-columns:1fr}}
+.badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-biasa{background:#333;color:#aaa}
+.badge-prem{background:linear-gradient(90deg,#ff00ff,#ff7b00);color:#fff}
+.locked{opacity:0.4;pointer-events:none}
+.lock-icon{color:#ff00ff;margin-left:5px}
+.paket{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
+.card-paket{border:2px solid #333;padding:15px;border-radius:12px;text-align:center}
+.card-paket.premium{border-color:var(--orange)}
+.harga{font-size:24px;font-weight:700;color:var(--orange)}
+.harga span{font-size:14px;color:#aaa;text-decoration:line-through}
+@media(max-width:700px){.upload-grid,.paket{grid-template-columns:1fr}}
+.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:999}
+.popup-content{background:var(--card);padding:25px;border-radius:16px;border:2px solid var(--orange);max-width:400px;text-align:center}
 </style>
 </head>
 <body>
 
-<!-- 1. HALAMAN LOGIN USER -->
 <div class="box" id="loginPage">
   <h1>🔥 TOOLS by ANDIK</h1>
   <p style="text-align:center">Masukkan Kode Akses Sewa</p>
@@ -43,85 +55,91 @@ hr{border-color:#333}
   <button class="btn" style="background:#333;color:#fff" onclick="showAdmin()">Login Admin</button>
 </div>
 
-<!-- 2. PANEL ADMIN OTOMATIS -->
 <div class="box" id="adminPanel">
   <h1>Panel Admin</h1>
   <input type="password" id="adminPass" placeholder="Password Admin">
   <button class="btn" onclick="loginAdmin()">Buka Panel</button>
-
   <div id="adminTools" style="display:none;margin-top:20px">
     <h3>+ Tambah User Baru</h3>
-    <input type="text" id="newKode" placeholder="Kode: ANDIK-003">
+    <input type="text" id="newKode" placeholder="Kode: ANDIK-001">
     <input type="text" id="newNama" placeholder="Nama: Budi">
     <input type="date" id="newExpired">
+    <select id="newTipe">
+      <option value="biasa">Biasa - 5x/minggu</option>
+      <option value="mingguan">Premium Mingguan</option>
+      <option value="bulanan">Premium Bulanan</option>
+    </select>
     <button class="btn" onclick="tambahUser()">Tambah User</button>
-
     <h3 style="margin-top:20px">Daftar User Sewa</h3>
     <table id="tabelUser"></table>
     <button class="btn btn-danger" onclick="logoutAdmin()">Logout Admin</button>
   </div>
 </div>
 
-<!-- 3. HALAMAN TOOLS UTAMA -->
 <div class="box" id="toolsPage">
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
     <div>
-      <h1>🔥 TOOLS by ANDIK PREMIUM</h1>
-      <p>Hai <b id="namaUser"></b> | Expired: <span id="expiredUser"></span></p>
+      <h1>🔥 TOOLS by ANDIK</h1>
+      <p>Hai <b id="namaUser"></b> | <span id="badgeTipe" class="badge"></span></p>
+      <p>Kuota: <b id="kuotaUser"></b></p>
     </div>
     <button class="btn-small" onclick="logout()">Logout</button>
   </div>
   <hr>
 
-  <!-- TOOLS AI DIMULAI -->
   <div>
-    <h3>OPSI 1: Ubah Gambar Jadi Prompt AI</h3>
+    <h3>OPSI 1: Ubah Gambar Jadi Prompt AI <span style="color:#00ff00">[GRATIS]</span></h3>
     <input type="file" id="imgInput1" accept="image/*">
     <img id="preview1" class="preview">
     <button class="btn" id="btnPrompt" onclick="generatePrompt()">✨ Generate Prompt Otomatis</button>
     <textarea id="promptResult" placeholder="Prompt detail akan muncul di sini..." rows="4"></textarea>
-    <div class="tags">
-      <div class="tag" onclick="addTag('anime style, sharp lines')">+ Anime</div>
-      <div class="tag" onclick="addTag('realistic photo, 8k')">+ Realistic</div>
-      <div class="tag" onclick="addTag('cinematic lighting, studio')">+ Cinematic</div>
-    </div>
     <button class="btn" onclick="copyPrompt()">📋 Salin Prompt</button>
   </div>
 
-  <div style="margin-top:20px">
-    <h3>OPSI 2: Buat Gambar Baru Dari 2 Referensi</h3>
+  <div id="fiturPremium" style="margin-top:20px">
+    <h3>OPSI 2: Mix Gambar 2 Referensi <span class="lock-icon">🔒 PREMIUM</span></h3>
     <div class="upload-grid">
-      <div>
-        <label style="font-size:13px;color:#aaa">1. Upload Wajah/Style Referensi</label>
-        <input type="file" id="imgInput2a" accept="image/*">
-        <img id="preview2a" class="preview">
-      </div>
-      <div>
-        <label style="font-size:13px;color:#aaa">2. Upload Pose/Outfit/Background</label>
-        <input type="file" id="imgInput2b" accept="image/*">
-        <img id="preview2b" class="preview">
-      </div>
+      <div><label style="font-size:13px;color:#aaa">1. Upload Wajah</label><input type="file" id="imgInput2a" accept="image/*"><img id="preview2a" class="preview"></div>
+      <div><label style="font-size:13px;color:#aaa">2. Upload Pose</label><input type="file" id="imgInput2b" accept="image/*"><img id="preview2b" class="preview"></div>
     </div>
-    <textarea id="extraPrompt" placeholder="Perintah tambahan: contoh 'gabungkan wajah dari gambar 1 ke pose gambar 2, background pantai malam'" rows="3"></textarea>
-    <div style="margin-top:10px">
-      <span style="font-size:13px;color:#aaa">Preset Cepat:</span><br>
-      <button class="btn-small" onclick="setPreset('ganti wajah orang di gambar 2 dengan wajah dari gambar 1, orang naik motor sport, realistic photo, helm dilepas, senyum, background jalan raya, cinematic lighting')">🏍️ Jadi Anak Motor</button>
-      <button class="btn-small" onclick="setPreset('pakai wajah dari gambar 1, pakai kostum anime dari gambar 2, background jepang malam, sakura, cinematic')">⛩️ Cosplay Anime</button>
-      <button class="btn-small" onclick="setPreset('ambil wajah dari gambar 1, pakai baju dan pose dari gambar 2, studio photo, background putih, professional')">👔 Ganti Baju Studio</button>
-    </div>
-    <button class="btn" id="btnGenerate" onclick="generateImage()">🎨 Generate Gambar Mix - GRATIS</button>
+    <textarea id="extraPrompt" placeholder="Perintah tambahan: contoh 'gabungkan wajah dari gambar 1 ke pose gambar 2'" rows="3"></textarea>
+    <button class="btn btn-premium" id="btnGenerate" onclick="generateImage()">🎨 Generate Gambar Mix</button>
+    <button class="btn btn-premium" onclick="showUpsell()">⚡ HD Upscale</button>
+    <button class="btn btn-premium" onclick="showUpsell()">🧹 Remove Background</button>
     <div class="loader" id="loader">⏳ Sedang generate... 20-40 detik</div>
     <img id="hasilGambar" class="output-img" style="display:none;">
   </div>
 </div>
 
-<script>
-const ADMIN_PASS = "ndik321"; // PASSWORD ADMIN
+<div class="popup" id="popupUpsell">
+  <div class="popup-content">
+    <h2>⚠️ KUOTA HABIS!</h2>
+    <p>Kamu sudah 5x generate minggu ini</p>
+    <p>Upgrade ke Premium untuk <b>UNLIMITED + NO WATERMARK</b></p>
+    <div class="paket">
+      <div class="card-paket">
+        <h3>Mingguan</h3>
+        <p class="harga">6rb <span>15rb</span></p>
+        <p style="font-size:12px">Unlimited + HD Upscale + Remove BG</p>
+        <button class="btn btn-premium" onclick="alert('Hubungi Admin untuk bayar 6rb via DANA')">Upgrade</button>
+      </div>
+      <div class="card-paket premium">
+        <h3>Bulanan 🔥 PALING WORTH</h3>
+        <p class="harga">18rb <span>60rb</span></p>
+        <p style="font-size:12px;text-align:left">✅ Unlimited Generate<br>✅ HD Upscale + Remove BG<br>✅ Face Swap AI<br>✅ Style Transfer<br>✅ Prioritas + No Watermark</p>
+        <button class="btn btn-premium" onclick="alert('Hubungi Admin untuk bayar 18rb via DANA')">Upgrade Sekarang</button>
+      </div>
+    </div>
+    <button class="btn-small" style="margin-top:15px" onclick="closeUpsell()">Nanti Dulu</button>
+  </div>
+</div>
 
-// Data disimpan otomatis di browser
+<script>
+const ADMIN_PASS = "ndik321";
 let daftarUser = JSON.parse(localStorage.getItem('daftarUser')) || [
-  { kode: "ANDIK-ADMIN", nama: "Andik", expired: "2027-12-31" }
+  { kode: "ADMIN-ANDIK01", nama: "Andik", expired: "2027-12-31", tipe: "bulanan" }
 ];
+let currentUser = null;
 
 function simpanData(){ localStorage.setItem('daftarUser', JSON.stringify(daftarUser)); }
 
@@ -130,125 +148,100 @@ function cekLogin(){
   const user = daftarUser.find(u => u.kode === kode);
   const today = new Date().toISOString().split('T')[0];
   if(user && user.expired >= today){
+    resetKuotaMingguan(user);
     localStorage.setItem('userLogin', JSON.stringify(user));
     bukaTools(user);
   } else { document.getElementById('errorMsg').style.display = 'block'; }
 }
 
+function resetKuotaMingguan(user){
+  const now = new Date();
+  const lastReset = user.lastReset? new Date(user.lastReset) : new Date(0);
+  const diffDays = (now - lastReset) / (1000*60*60*24);
+  if(diffDays >= 7 ||!user.lastReset){
+    user.kuota = 0;
+    user.lastReset = now.toISOString();
+    simpanData();
+  }
+}
+
 function bukaTools(user){
+  currentUser = user;
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('toolsPage').style.display = 'block';
   document.getElementById('namaUser').innerText = user.nama;
-  document.getElementById('expiredUser').innerText = user.expired;
+
+  if(user.tipe === 'biasa'){
+    document.getElementById('badgeTipe').innerText = 'BIASA'; document.getElementById('badgeTipe').className = 'badge badge-biasa';
+    document.getElementById('kuotaUser').innerText = `${user.kuota || 0}/5 Minggu Ini`;
+    if((user.kuota || 0) >= 5){ document.getElementById('fiturPremium').classList.add('locked'); }
+  } else {
+    document.getElementById('badgeTipe').innerText = 'PREMIUM ' + user.tipe.toUpperCase(); document.getElementById('badgeTipe').className = 'badge badge-prem';
+    document.getElementById('kuotaUser').innerText = 'UNLIMITED';
+    document.getElementById('fiturPremium').classList.remove('locked');
+  }
 }
 
+function pakaiKuota(){
+  if(currentUser.tipe === 'biasa'){
+    currentUser.kuota = (currentUser.kuota || 0) + 1;
+    if(currentUser.kuota >= 5){ showUpsell(); }
+    simpanData(); bukaTools(currentUser);
+    return currentUser.kuota <= 5;
+  }
+  return true;
+}
+
+function showUpsell(){ document.getElementById('popupUpsell').style.display = 'flex'; }
+function closeUpsell(){ document.getElementById('popupUpsell').style.display = 'none'; }
 function logout(){ localStorage.removeItem('userLogin'); location.reload(); }
 
-// ===== ADMIN =====
-function showAdmin(){
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('adminPanel').style.display = 'block';
-}
-function loginAdmin(){
-  if(document.getElementById('adminPass').value === ADMIN_PASS){
-    document.getElementById('adminTools').style.display = 'block';
-    tampilkanTabel();
-  } else alert("Password salah!");
-}
+function showAdmin(){ document.getElementById('loginPage').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; }
+function loginAdmin(){ if(document.getElementById('adminPass').value === ADMIN_PASS){ document.getElementById('adminTools').style.display = 'block'; tampilkanTabel(); } else alert("Password salah!"); }
 function tambahUser(){
   const kode = document.getElementById('newKode').value.toUpperCase();
   const nama = document.getElementById('newNama').value;
   const expired = document.getElementById('newExpired').value;
+  const tipe = document.getElementById('newTipe').value;
   if(!kode ||!nama ||!expired) return alert("Isi semua!");
-  if(daftarUser.find(u => u.kode === kode)) return alert("Kode sudah ada!");
-  daftarUser.push({kode,nama,expired});
+  daftarUser.push({kode,nama,expired,tipe,kuota:0,lastReset:new Date().toISOString()});
   simpanData(); tampilkanTabel(); alert("User berhasil ditambah!");
 }
-function hapusUser(kode){
-  if(confirm("Yakin hapus user "+kode+"?")){
-    daftarUser = daftarUser.filter(u => u.kode!== kode);
-    simpanData(); tampilkanTabel();
-  }
-}
+function hapusUser(kode){ if(confirm("Yakin hapus user "+kode+"?")){ daftarUser = daftarUser.filter(u => u.kode!== kode); simpanData(); tampilkanTabel(); } }
 function tampilkanTabel(){
-  let html = "<tr><th>Kode</th><th>Nama</th><th>Expired</th><th></th></tr>";
-  daftarUser.forEach(u => {
-    html += `<tr><td>${u.kode}</td><td>${u.nama}</td><td>${u.expired}</td>
-    <td><button class="btn-small btn-danger" onclick="hapusUser('${u.kode}')">Hapus</button></td></tr>`;
-  });
+  let html = "<tr><th>Kode</th><th>Nama</th><th>Tipe</th><th>Expired</th><th></th></tr>";
+  daftarUser.forEach(u => { html += `<tr><td>${u.kode}</td><td>${u.nama}</td><td>${u.tipe}</td><td>${u.expired}</td><td><button class="btn-small btn-danger" onclick="hapusUser('${u.kode}')">Hapus</button></td></tr>`; });
   document.getElementById('tabelUser').innerHTML = html;
 }
 function logoutAdmin(){ location.reload(); }
 
-// ===== KODE TOOLS AI =====
-let base64Image1 = "";
-let base64Image2a = "";
-let base64Image2b = "";
+let base64Image1 = ""; let base64Image2a = ""; let base64Image2b = "";
 document.getElementById('imgInput1').onchange = e => handleFile(e, 'preview1', 1);
 document.getElementById('imgInput2a').onchange = e => handleFile(e, 'preview2a', '2a');
 document.getElementById('imgInput2b').onchange = e => handleFile(e, 'preview2b', '2b');
-function handleFile(e, previewId, num){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById(previewId).src = reader.result;
-    document.getElementById(previewId).style.display = 'block';
-    if(num === 1) base64Image1 = reader.result;
-    if(num === '2a') base64Image2a = reader.result;
-    if(num === '2b') base64Image2b = reader.result;
-  }
-  reader.readAsDataURL(file);
-}
-function generatePrompt(){
-  if(!base64Image1) return alert('Upload gambar dulu!');
-  document.getElementById('btnPrompt').innerText = '⏳ Menganalisa...';
-  document.getElementById('btnPrompt').disabled = true;
-  setTimeout(() => {
-    const prompt = `masterpiece, best quality, high detail photo, natural skin texture, cinematic lighting, sharp focus, 8k, professional portrait --ar 2:3 --style raw`;
-    document.getElementById('promptResult').value = prompt;
-    document.getElementById('btnPrompt').innerText = '✨ Generate Prompt Otomatis';
-    document.getElementById('btnPrompt').disabled = false;
-  }, 1500);
-}
-function addTag(tag){
-  let current = document.getElementById('promptResult').value;
-  document.getElementById('promptResult').value = current + ', ' + tag;
-}
-function copyPrompt(){
-  navigator.clipboard.writeText(document.getElementById('promptResult').value);
-  alert('Prompt berhasil disalin!');
-}
-function setPreset(text){
-  document.getElementById('extraPrompt').value = text;
-}
+function handleFile(e, previewId, num){ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { document.getElementById(previewId).src = reader.result; document.getElementById(previewId).style.display = 'block'; if(num === 1) base64Image1 = reader.result; if(num === '2a') base64Image2a = reader.result; if(num === '2b') base64Image2b = reader.result; } reader.readAsDataURL(file); }
+function generatePrompt(){ if(!base64Image1) return alert('Upload gambar dulu!'); if(!pakaiKuota()) return; document.getElementById('btnPrompt').innerText = '⏳ Menganalisa...'; setTimeout(() => { document.getElementById('promptResult').value = `masterpiece, best quality, high detail photo, natural skin texture, cinematic lighting, 8k --ar 2:3`; document.getElementById('btnPrompt').innerText = '✨ Generate Prompt Otomatis'; }, 1500); }
+function copyPrompt(){ navigator.clipboard.writeText(document.getElementById('promptResult').value); alert('Prompt berhasil disalin!'); }
+
 async function generateImage(){
+  if(!pakaiKuota()) return;
   if(!base64Image2a &&!base64Image2b) return alert('Upload minimal 1 gambar referensi!');
+
   let prompt = document.getElementById('extraPrompt').value || "buat gambar baru dengan style yang sama";
-  let refText = "";
-  if(base64Image2a && base64Image2b) refText = "mix the face from first image with the pose and outfit from second image";
-  else if(base64Image2a) refText = "use the face and style from reference image";
-  else refText = "use the pose and background from reference image";
-  let fullPrompt = `${refText}, ${prompt}. masterpiece, 8k, highly detailed, cinematic`;
-  document.getElementById('loader').style.display = 'block';
-  document.getElementById('btnGenerate').disabled = true;
+
+  // WATERMARK BUAT USER BIASA
+  if(currentUser.tipe === 'biasa'){
+    prompt = prompt + ", with big watermark text 'TOOLS BY ANDIK' at bottom right corner";
+  }
+
+  let fullPrompt = `${prompt}. masterpiece, 8k, highly detailed, cinematic`;
+  document.getElementById('loader').style.display = 'block'; document.getElementById('btnGenerate').disabled = true;
   let url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=512&height=768&nologo=true&seed=${Math.floor(Math.random()*9999)}`;
   document.getElementById('hasilGambar').src = url;
-  document.getElementById('hasilGambar').onload = () => {
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('hasilGambar').style.display = 'block';
-    document.getElementById('btnGenerate').disabled = false;
-  }
+  document.getElementById('hasilGambar').onload = () => { document.getElementById('loader').style.display = 'none'; document.getElementById('hasilGambar').style.display = 'block'; document.getElementById('btnGenerate').disabled = false; }
 }
 
-// Auto login
-window.onload = function(){
-  const savedUser = JSON.parse(localStorage.getItem('userLogin'));
-  if(savedUser){
-    const today = new Date().toISOString().split('T')[0];
-    if(savedUser.expired >= today) bukaTools(savedUser);
-  }
-}
+window.onload = function(){ const savedUser = JSON.parse(localStorage.getItem('userLogin')); if(savedUser){ resetKuotaMingguan(savedUser); bukaTools(savedUser); } }
 </script>
 </body>
 </html>
