@@ -26,6 +26,7 @@ h3{color:var(--orange);margin-bottom:10px}
 .loader{display:none;text-align:center;padding:20px}
 .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .tag{padding:6px 12px;background:#0a0a0f;border:1px solid #333;border-radius:20px;font-size:12px;cursor:pointer}
+hr{border-color:#333}
 @media(max-width:700px){.upload-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -38,7 +39,7 @@ h3{color:var(--orange);margin-bottom:10px}
   <input type="text" id="kodeInput" placeholder="Contoh: ANDIK-001">
   <button class="btn" onclick="cekLogin()">MASUK</button>
   <p id="errorMsg" style="color:red;display:none;margin-top:10px;text-align:center">Kode salah atau sudah expired!</p>
-  <hr style="margin:15px 0;border-color:#333">
+  <hr>
   <button class="btn" style="background:#333;color:#fff" onclick="showAdmin()">Login Admin</button>
 </div>
 
@@ -63,17 +64,17 @@ h3{color:var(--orange);margin-bottom:10px}
 
 <!-- 3. HALAMAN TOOLS UTAMA -->
 <div class="box" id="toolsPage">
-  <div style="display:flex;justify-content:space-between;align-items:center">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
     <div>
       <h1>🔥 TOOLS by ANDIK PREMIUM</h1>
       <p>Hai <b id="namaUser"></b> | Expired: <span id="expiredUser"></span></p>
     </div>
     <button class="btn-small" onclick="logout()">Logout</button>
   </div>
-  <hr style="margin:15px 0;border-color:#333">
+  <hr>
 
   <!-- TOOLS AI DIMULAI -->
-  <div class="card">
+  <div>
     <h3>OPSI 1: Ubah Gambar Jadi Prompt AI</h3>
     <input type="file" id="imgInput1" accept="image/*">
     <img id="preview1" class="preview">
@@ -87,7 +88,7 @@ h3{color:var(--orange);margin-bottom:10px}
     <button class="btn" onclick="copyPrompt()">📋 Salin Prompt</button>
   </div>
 
-  <div class="card" style="margin-top:20px">
+  <div style="margin-top:20px">
     <h3>OPSI 2: Buat Gambar Baru Dari 2 Referensi</h3>
     <div class="upload-grid">
       <div>
@@ -115,7 +116,7 @@ h3{color:var(--orange);margin-bottom:10px}
 </div>
 
 <script>
-const ADMIN_PASS = "ndik321"; // PASSWORD ADMIN UDAH DIGANTI
+const ADMIN_PASS = "ndik321"; // PASSWORD ADMIN
 
 // Data disimpan otomatis di browser
 let daftarUser = JSON.parse(localStorage.getItem('daftarUser')) || [
